@@ -1,0 +1,27 @@
+# the launcher's RAR extraction, a small library of its own so the launcher
+# does not load the game's to unpack a download
+
+[package]
+name = "pqunrar"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+[dependencies]
+unrar = "0.5"
+jni = "0.21"
+
+[profile.release]
+lto = "thin"
+opt-level = "s"
+strip = "debuginfo"
+
+[workspace]
+
+[patch.crates-io]
+# its build script looks at the host to pick Windows' files, not the target
+unrar_sys = { path = "vendor/unrar_sys" }

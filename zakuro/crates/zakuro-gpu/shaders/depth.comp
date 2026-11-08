@@ -1,0 +1,76 @@
+#version 450
+
+// a texture that is rows of a depth buffer, read as colors the way a title
+// reads the buffer's bytes. the depth and the stencil come copied into
+// buffers, a word and a byte per sample, in the image's rows, bottom first.
+// d24s8 samples read as rgba8 give the stencil, then the depth's high,
+// middle and low bytes, d24 samples read as rgb8 give the depth's bytes.
+// a GPU with no D24S8 draws into D32S8, its depth words floats.
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(set = 0, binding = 0) readonly buffer Depths { uint depths[]; };
+layout(set = 0, binding = 1) readonly buffer Stencils { uint stencils[]; };
+layout(set = 0, binding = 2, rgba8) uniform writeonly image2D target;
+
+layout(push_constant) uniform Copy {
+    // the texture's width and height
+    ivec2 size;
+    // the surface's width and height, and the row the texture starts at
+    int surface_width;
+    int surface_height;
+    int source_row;
+    // 1 when samples carry stencil, and the texture is rgba8, 2 when the
+    // depth words are floats
+    int stencil;
+} copy;
+
+// the 24-bit value a float depth word stands for, rounded half up as the
+// CPU rounds it, exactly: its mantissa times 2^24 - 1, 48 bits in two
+// words, and a half, shifted down by its exponent. negative depth and NaN
+// are 0, past 1 is 1
+uint depth_value(uint bits) {
+    if ((bits & 0x80000000u) != 0u || bits == 0u || bits > 0x7F800000u) {
+        return 0u;
+    }
+    if (bits >= 0x3F800000u) {
+        return 0xFFFFFFu;
+    }
+    uint exponent = bits >> 23;
+    uint mantissa = (bits & 0x7FFFFFu) | (exponent != 0u ? 0x800000u : 0u);
+    uint shift = (exponent != 0u ? 150u : 149u) - exponent;
+    if (shift >= 49u) {
+        return 0u;
+    }
+    uint borrow;
+    uint low = usubBorrow(mantissa << 24, mantissa, borrow);
+    uint high = (mantissa >> 8) - borrow;
+    uint half_at = shift - 1u;
+    if (half_at < 32u) {
+        uint carry;
+        low = uaddCarry(low, 1u << half_at, carry);
+        high += carry;
+    } else {
+        high += 1u << (half_at - 32u);
+    }
+    return shift >= 32u ? high >> (shift - 32u) : (low >> shift) | (high << (32u - shift));
+}
+
+void main() {
+    ivec2 at = ivec2(gl_GlobalInvocationID.xy);
+    if (at.x >= copy.size.x || at.y >= copy.size.y) {
+        return;
+    }
+    int row = copy.surface_height - 1 - (copy.source_row + at.y);
+    int index = row * copy.surface_width + at.x;
+    uint depth = (copy.stencil & 2) != 0 ? depth_value(depths[index]) : depths[index] & 0xFFFFFFu;
+    uvec3 bytes = uvec3(depth >> 16, depth >> 8, depth) & 0xFFu;
+    uvec4 color;
+    if ((copy.stencil & 1) != 0) {
+        uint stencil = (stencils[index >> 2] >> ((index & 3) * 8)) & 0xFFu;
+        color = uvec4(stencil, bytes);
+    } else {
+        color = uvec4(bytes, 255u);
+    }
+    // the texture's rows run top first
+    imageStore(target, ivec2(at.x, at.y), vec4(color) / 255.0);
+}

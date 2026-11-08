@@ -1,0 +1,34 @@
+# Persona Q, recompiled by 3dsrecomp port, as an Android app's library
+
+[package]
+name = "personaq"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+[dependencies]
+zakuro = { path = "../zakuro/crates/zakuro", features = ["android"] }
+log = "0.4"
+
+[profile.release]
+debug = 1
+lto = "thin"
+codegen-units = 16
+
+# linked: the game's code recompiled on a PC linked into the library (the
+# developer's builds, never shared). without it the APK holds no game code: the
+# phone recompiles the player's own game the first time it starts
+[features]
+linked = []
+
+# a project of its own, whatever directory it sits in
+[workspace]
+
+# 3dsrecomp as it is beside zakuro here, with what recompiling on a phone needs
+[patch."https://github.com/fearkov/3dsrecomp"]
+recomp3ds = { path = "../3dsrecomp" }
+recomp-abi = { path = "../3dsrecomp/abi" }
