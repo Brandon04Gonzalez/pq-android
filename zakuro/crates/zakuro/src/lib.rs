@@ -930,8 +930,6 @@ impl App {
             }
         }
         self.game = Some(game);
-        #[cfg(target_os = "android")]
-        self.recompile_on_phone();
         // ZAKURO_LOAD=file goes on from a saved state, as the boot example
         // does, to try a scene of the game right away
         let after = std::env::var("ZAKURO_LOAD_AFTER").ok().and_then(|seconds| seconds.parse::<f64>().ok());
@@ -962,6 +960,9 @@ impl App {
         self.keyboard.release();
         self.paused = false;
         self.next_frame = Instant::now();
+        // last, so that the game it holds stays held while the phone recompiles it
+        #[cfg(target_os = "android")]
+        self.recompile_on_phone();
         Ok(())
     }
 
