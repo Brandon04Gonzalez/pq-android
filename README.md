@@ -1,5 +1,8 @@
 # Persona Q for Android (native port)
 
+> [!WARNING]
+> **Maintenance of this port has been stopped.** This repository is no longer actively maintained.
+
 An Android app that runs **your own copy** of Persona Q: Shadow of the Labyrinth (Nintendo 3DS, US) on an arm64 phone
 or tablet. The game's code is translated to native ARM64 code **on your phone**, the first time you play: the APK
 holds no game code or data, only the engine and a C compiler.
@@ -12,12 +15,9 @@ holds no game code or data, only the engine and a C compiler.
 Persona Q is © ATLUS / © SEGA. This is an unofficial fan project, not affiliated with or endorsed by ATLUS, SEGA or
 Nintendo.
 
-## Community and support
+## Community
 
 - **Discord** (English and Spanish channels), for news, help and testing: https://discord.gg/rMgRneBTCe
-- **Support the developer (optional):** [GitHub Sponsors](https://github.com/sponsors/Brandon04Gonzalez). These ports
-  are free and made for preservation. Donating is entirely voluntary and helps with the costs of making them (test
-  devices, hardware, servers). Nothing is locked behind a donation.
 
 ## Why not a native (NCE) build like the Switch ports?
 
@@ -67,14 +67,14 @@ cd pq-android; python build_apk.py      # paths at the top of build_apk.py
 
 ## En español
 
+> [!WARNING]
+> **Se ha detenido el mantenimiento de este port.** Este repositorio ya no recibe mantenimiento activo.
+
 Una app de Android que ejecuta **tu propia copia** de Persona Q: Shadow of the Labyrinth (3DS, EE. UU.) en un móvil o
 tablet arm64. El código del juego se traduce a código nativo **en tu móvil** la primera vez que juegas: el APK no lleva
 código ni datos del juego, solo el motor y un compilador de C.
 
 - **Discord** (canales en español e inglés): https://discord.gg/rMgRneBTCe
-- **Apoyar al desarrollador (opcional):** [GitHub Sponsors](https://github.com/sponsors/Brandon04Gonzalez). Los ports
-  son gratis y se hacen para preservación. Donar es totalmente voluntario y ayuda con los gastos que conlleva hacerlos
-  (dispositivos de prueba, equipo, servidores). No hay nada de pago.
 
 **¿Por qué no hay una versión nativa (NCE) como en los ports de Switch?** Los ports de Switch ejecutan el código del
 propio juego directamente en el procesador del móvil, porque la Switch y los móviles Android usan la misma arquitectura
